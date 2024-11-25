@@ -76,11 +76,17 @@
       };
 
       document.getElementById('sendMessageButton').addEventListener('click', () => {
+                 // Token'i çözümle
+                 const token = localStorage.getItem('token');
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const userId = payload.user_id;
+                const username = payload.username;
         const messageInput = document.getElementById('messageInput');
         const message = messageInput.value;
-        socket.send(JSON.stringify({ content: message }));
+        socket.send(JSON.stringify({ content: message, username : username, userId :userId }));
         messageInput.value = '';
       });
+      
     </script>
     </body>
 </html>

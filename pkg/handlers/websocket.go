@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"context"
+	"go-chat-app/pkg/db"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -17,14 +20,21 @@ var broadcast = make(chan Message)           // Broadcast channel
 
 type Message struct {
 	Username string `json:"username"`
-	Content  string `json:"content"` // Ensure this matches "content" from the client
+	Content  string `json:"content"`
 	RoomID   int    `json:"roomID"`
+	UserID   int    `json:"userID"`
 }
 
 func HandleConnections(c *gin.Context) {
-	roomId := c.Query("roomId")
-	if roomId == "" {
+	roomIdStr := c.Query("roomId")
+	if roomIdStr == "" {
 		http.Error(c.Writer, "Room ID is required", http.StatusBadRequest)
+		return
+	}
+
+	roomId, err := strconv.Atoi(roomIdStr)
+	if err != nil {
+		http.Error(c.Writer, "Invalid Room ID", http.StatusBadRequest)
 		return
 	}
 
@@ -45,7 +55,10 @@ func HandleConnections(c *gin.Context) {
 			break
 		}
 
-		//msg.RoomID = roomId // Mesaja oda ID'sini ekleyin
+		// msg.Username = username
+		// msg.UserID = userId
+		// Mesaja oda ID'sini ekleyin
+		msg.RoomID = roomId
 		broadcast <- msg
 	}
 }
@@ -60,6 +73,32 @@ func HandleMessages() {
 				client.Close()
 				delete(clients, client)
 			}
+		}
+		log.Printf("Message received: %+v\n", msg)
+
+		// Check if user ID exists
+		var userExists bool
+		err := db.DB.QueryRow(context.Background(),
+			"SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)",
+			msg.UserID,
+		).Scan(&userExists)
+		if err != nil {
+			log.Printf("Error checking user existence: %v\n", err)
+			continue
+		}
+
+		if !userExists {
+			log.Printf("User ID %d does not exist\n", msg.UserID)
+			continue
+		}
+
+		// Save message to the database
+		_, err = db.DB.Exec(context.Background(),
+			"INSERT INTO messages (user_id, room_id, content, created_at) VALUES ($1, $2, $3, now())",
+			msg.UserID, msg.RoomID, msg.Content,
+		)
+		if err != nil {
+			log.Printf("Error saving message to database: %v\n", err)
 		}
 	}
 }

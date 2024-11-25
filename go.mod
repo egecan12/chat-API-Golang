@@ -8,6 +8,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/joho/godotenv v1.5.1
 	golang.org/x/crypto v0.23.0
+
 )
 
 require (
