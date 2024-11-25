@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Register</title>
+        <style>
+      body {
+        background-color: #121212;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      form {
+        width: 90%;
+        max-width: 600px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      input {
+        padding: 10px;
+        margin: 5px 0;
+        border: none;
+        border-radius: 5px;
+        width: calc(100% - 20px);
+        max-width: 600px;
+        color: #ffffff;
+        background-color: #333;
+      }
+      input::placeholder {
+        color: #777;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px 0;
+        border: none;
+        border-radius: 5px;
+        color: #ffffff;
+        background-color: #6200ee;
+        cursor: pointer;
+        width: calc(100% - 20px);
+        max-width: 600px;
+      }
+      button:hover {
+        background-color: #3700b3;
+      }
+      a {
+        color: #6200ee;
+        text-decoration: none;
+        margin-top: 10px;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+    </style>
+    </head>
+    <body>
+        <h1>Register</h1>
+        <form id="registerForm">
+            <input type="text" id="username" placeholder="Enter your username"
+                required />
+            <input type="password" id="password"
+                placeholder="Enter your password" required />
+            <button type="submit">Register</button>
+            <a href="/login">Already have an account? Login</a>
+        </form>
+        <script>
+      const registerForm = document.getElementById("registerForm");
+
+      registerForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        const response = await fetch("http://localhost:8080/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (response.ok) {
+          alert("Registration successful! Please log in.");
+          window.location.href = "/login";
+        } else {
+          const errorData = await response.json();
+          alert("Error: " + errorData.error);
+        }
+      });
+    </script>
+    </body>
+</html>

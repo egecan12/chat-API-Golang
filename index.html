@@ -81,38 +81,78 @@
     <button id="send">Send</button>
 
     <script>
-      const ws = new WebSocket("ws://localhost:8080/ws");
+      // Check if the user is logged in
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You need to log in first!");
+        window.location.href = "login.html"; // Redirect to login page
+      }
     
-      // Display incoming messages
-      ws.onmessage = (event) => {
-    console.log("Raw message received:", event.data); // Log raw data
-    const message = JSON.parse(event.data);
-    console.log("Parsed message:", message); // Log parsed object
-    const messageItem = document.createElement("li");
-    messageItem.textContent = `${message.username || "Unknown"}: ${message.content || "No content"}`;
-    document.getElementById("messages").appendChild(messageItem);
+      // Establish WebSocket connection with the token included in the URL or headers
+      const ws = new WebSocket("ws://localhost:8080/ws");
+
+ws.onopen = () => {
+  console.log("WebSocket connection established");
+  // Token'i ilk mesaj olarak gönder
+  ws.send(JSON.stringify({ token }));
 };
 
     
-document.getElementById("send").addEventListener("click", () => {
-    const username = document.getElementById("username").value.trim();
-    const content = document.getElementById("message").value.trim();
-
-    // Validate both fields
-    if (!username || !content) {
-        alert("Both username and message are required!");
-        return;
-    }
-
-    // Send the message to the WebSocket server
-    const message = { username, content };
-    console.log("Sending message:", message); // Debugging log
-    ws.send(JSON.stringify(message));
-
-    // Clear the message input field after sending
-    document.getElementById("message").value = "";
-});
-
+      // Handle WebSocket connection open
+      ws.onopen = () => {
+        console.log("WebSocket connection established");
+      };
+    
+      // Handle incoming messages
+      ws.onmessage = (event) => {
+        console.log("Raw message received:", event.data); // Log raw data
+        const message = JSON.parse(event.data);
+        console.log("Parsed message:", message); // Log parsed object
+    
+        // Append message to the chat
+        const messageItem = document.createElement("li");
+        messageItem.textContent = `${message.username || "Unknown"}: ${message.content || "No content"}`;
+        document.getElementById("messages").appendChild(messageItem);
+      };
+    
+      // Handle WebSocket errors
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        alert("An error occurred with the WebSocket connection.");
+      };
+    
+      // Handle WebSocket close
+      ws.onclose = (event) => {
+        console.log("WebSocket connection closed:", event);
+        alert("Disconnected from the server. Please refresh the page or check your connection.");
+      };
+    
+      // Handle send button click
+      document.getElementById("send").addEventListener("click", () => {
+        const content = document.getElementById("message").value.trim();
+    
+        // Validate the message field
+        if (!content) {
+          alert("Message content cannot be empty!");
+          return;
+        }
+    
+        // Send the message to the WebSocket server
+        const message = { content }; // Assume username is already handled by the backend
+        console.log("Sending message:", message); // Debugging log
+        ws.send(JSON.stringify(message));
+    
+        // Clear the message input field after sending
+        document.getElementById("message").value = "";
+      });
+    
+      // Optionally, handle the enter key for sending messages
+      document.getElementById("message").addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault(); // Prevent the default action
+          document.getElementById("send").click(); // Trigger the send button
+        }
+      });
     </script>
 
   </body>

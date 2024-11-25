@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lobby</title>
+        <style>
+      body {
+        background-color: #121212;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        height: 100vh;
+        padding-top: 20px;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      #roomList {
+        width: 90%;
+        max-width: 600px;
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #1e1e1e;
+        border-radius: 8px;
+      }
+      #roomList ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      #roomList li {
+        margin: 5px 0;
+        padding: 10px;
+        background-color: #333;
+        border-radius: 5px;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px;
+        border: none;
+        border-radius: 5px;
+        color: #ffffff;
+        background-color: #6200ee;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #3700b3;
+      }
+      #newRoomPopup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #1e1e1e;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+      #newRoomPopup input {
+        margin-bottom: 10px;
+        padding: 10px;
+        width: 100%;
+      }
+    </style>
+    </head>
+    <body>
+        <h1>Lobby</h1>
+        <div id="roomList">
+            <h2>Available Rooms</h2>
+            <ul id="rooms"></ul>
+        </div>
+        <button id="addRoomButton">Add New Room</button>
+
+        <div id="newRoomPopup">
+            <h2>Create New Room</h2>
+            <input id="roomNameInput" type="text" placeholder="Room Name" />
+            <button id="createRoomButton">Create</button>
+            <button id="cancelRoomButton">Cancel</button>
+        </div>
+
+        <script>
+      // Fetch rooms and display them
+      async function fetchRooms() {
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:8080/rooms", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        const roomsElement = document.getElementById("rooms");
+        roomsElement.innerHTML = ""; // Clear current list
+        data.rooms.forEach((room) => {
+          const li = document.createElement("li");
+          li.textContent = room.name;
+          roomsElement.appendChild(li);
+        });
+      }
+
+      // Show/hide the "New Room" popup
+      const popup = document.getElementById("newRoomPopup");
+      document.getElementById("addRoomButton").addEventListener("click", () => {
+        popup.style.display = "block";
+      });
+      document.getElementById("cancelRoomButton").addEventListener("click", () => {
+        popup.style.display = "none";
+      });
+
+      // Create a new room
+      document.getElementById("createRoomButton").addEventListener("click", async () => {
+        const token = localStorage.getItem("token");
+        const roomName = document.getElementById("roomNameInput").value.trim();
+        if (!roomName) {
+          alert("Room name cannot be empty!");
+          return;
+        }
+        const response = await fetch("http://localhost:8080/rooms", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ name: roomName }),
+        });
+        if (response.ok) {
+          alert("Room created successfully!");
+          popup.style.display = "none";
+          document.getElementById("roomNameInput").value = "";
+          fetchRooms(); // Refresh the room list
+        } else {
+          alert("Error creating room!");
+        }
+      });
+
+      // Fetch rooms on page load
+      fetchRooms();
+    </script>
+    </body>
+</html>
