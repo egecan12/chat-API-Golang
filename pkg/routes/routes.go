@@ -40,6 +40,6 @@ func SetupRoutes(router *gin.Engine) {
 	})
 
 	// Room endpoints
-	router.GET("/rooms", handlers.GetRooms)    // List all rooms
-	router.POST("/rooms", handlers.CreateRoom) // Create a new room
+	router.GET("/rooms", handlers.AuthMiddleware(), handlers.GetRooms)    // List all rooms
+	router.POST("/rooms", handlers.AuthMiddleware(), handlers.CreateRoom) // Create a new room
 }

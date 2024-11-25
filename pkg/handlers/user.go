@@ -49,7 +49,6 @@ func RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully!"})
 }
 
-// LoginUser handles user login
 func LoginUser(c *gin.Context) {
 	var user User
 	var storedPassword string
@@ -60,36 +59,35 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	// Retrieve the user from the database
-	err := db.DB.QueryRow(context.Background(),
-		"SELECT id, password FROM users WHERE username = $1", user.Username,
-	).Scan(&user.ID, &storedPassword)
-	if err != nil {
+	// Query user from the database
+	var dbUser User
+	if err := db.DB.QueryRow(context.Background(), "SELECT id, username, password FROM users WHERE username=$1", user.Username).Scan(&dbUser.ID, &dbUser.Username, &storedPassword); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
 		return
 	}
 
-	// Compare the provided password with the stored hashed password
+	// Compare passwords
 	if err := bcrypt.CompareHashAndPassword([]byte(storedPassword), []byte(user.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
 		return
 	}
 
-	// Generate a JWT token
+	// Create JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.ID,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(), // Token expires in 24 hours
+		"user_id":  dbUser.ID,
+		"username": dbUser.Username,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(), // Token expires in 24 hours
 	})
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "JWT secret not configured"})
-		return
-	}
-	tokenString, err := token.SignedString([]byte(secret))
+
+	// Sign token with secret
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+	// Return the token
+	c.JSON(http.StatusOK, gin.H{
+		"token": tokenString,
+	})
 }
