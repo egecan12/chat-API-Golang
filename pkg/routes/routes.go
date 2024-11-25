@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-chat-app/pkg/handlers"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,6 +38,14 @@ func SetupRoutes(router *gin.Engine) {
 	// Serve the lobby page
 	router.GET("/lobby", func(c *gin.Context) {
 		c.File("lobby.html") // Ensure the path is correct
+	})
+	router.GET("/room", func(c *gin.Context) {
+		roomId := c.Query("roomId")
+		if roomId == "" {
+			c.String(http.StatusBadRequest, "Room ID is required")
+			return
+		}
+		c.File("room.html")
 	})
 
 	// Room endpoints

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Room</title>
+        <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+      #messages {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+        border-bottom: 1px solid #ccc;
+      }
+      #messageInputContainer {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #ccc;
+      }
+      #messageInput {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      #sendMessageButton {
+        padding: 10px 20px;
+        margin-left: 10px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    </style>
+    </head>
+    <body>
+        <h1 id="roomTitle">Room</h1>
+        <div id="messages"></div>
+        <div id="messageInputContainer">
+            <input id="messageInput" type="text" placeholder="Type a message" />
+            <button id="sendMessageButton">Send</button>
+        </div>
+
+        <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomId = urlParams.get('roomId');
+      document.getElementById('roomTitle').innerText = `Room: ${roomId}`;
+
+      const socket = new WebSocket(`ws://localhost:8080/ws?roomId=${roomId}`);
+
+      socket.onopen = () => {
+        console.log("WebSocket connection established");
+      };
+
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        const messageDiv = document.createElement('div');
+        messageDiv.innerText = `${message.username}: ${message.content}`;
+        document.getElementById('messages').appendChild(messageDiv);
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      socket.onclose = (event) => {
+        console.log("WebSocket connection closed:", event);
+      };
+
+      document.getElementById('sendMessageButton').addEventListener('click', () => {
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value;
+        socket.send(JSON.stringify({ content: message }));
+        messageInput.value = '';
+      });
+    </script>
+    </body>
+</html>

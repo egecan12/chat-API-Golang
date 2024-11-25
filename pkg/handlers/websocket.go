@@ -18,9 +18,16 @@ var broadcast = make(chan Message)           // Broadcast channel
 type Message struct {
 	Username string `json:"username"`
 	Content  string `json:"content"` // Ensure this matches "content" from the client
+	RoomID   int    `json:"roomID"`
 }
 
 func HandleConnections(c *gin.Context) {
+	roomId := c.Query("roomId")
+	if roomId == "" {
+		http.Error(c.Writer, "Room ID is required", http.StatusBadRequest)
+		return
+	}
+
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Fatalf("Error upgrading connection: %v\n", err)
@@ -38,17 +45,16 @@ func HandleConnections(c *gin.Context) {
 			break
 		}
 
-		log.Printf("Received message: %+v\n", msg) // Log the incoming message
+		//msg.RoomID = roomId // Mesaja oda ID'sini ekleyin
 		broadcast <- msg
 	}
-
 }
 
 func HandleMessages() {
 	for {
 		msg := <-broadcast
 		for client := range clients {
-			err := client.WriteJSON(msg) // Broadcast as JSON
+			err := client.WriteJSON(msg)
 			if err != nil {
 				log.Printf("Error broadcasting message: %v\n", err)
 				client.Close()
