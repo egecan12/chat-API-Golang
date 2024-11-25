@@ -17,7 +17,7 @@ var broadcast = make(chan Message)           // Broadcast channel
 
 type Message struct {
 	Username string `json:"username"`
-	Message  string `json:"message"`
+	Content  string `json:"content"` // Ensure this matches "content" from the client
 }
 
 func HandleConnections(c *gin.Context) {
@@ -37,15 +37,18 @@ func HandleConnections(c *gin.Context) {
 			delete(clients, ws)
 			break
 		}
+
+		log.Printf("Received message: %+v\n", msg) // Log the incoming message
 		broadcast <- msg
 	}
+
 }
 
 func HandleMessages() {
 	for {
 		msg := <-broadcast
 		for client := range clients {
-			err := client.WriteJSON(msg)
+			err := client.WriteJSON(msg) // Broadcast as JSON
 			if err != nil {
 				log.Printf("Error broadcasting message: %v\n", err)
 				client.Close()

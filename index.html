@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+            body {
+                background-color: #121212;
+                color: #ffffff;
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+            }
+            h1 {
+                margin-bottom: 20px;
+            }
+            #chat {
+                width: 90%;
+                max-width: 600px;
+                height: 50vh;
+                overflow-y: auto;
+                border: 1px solid #333;
+                background-color: #1e1e1e;
+                border-radius: 8px;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            #messages {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            #messages li {
+                margin-bottom: 10px;
+                padding: 8px;
+                background-color: #333;
+                border-radius: 5px;
+            }
+            input {
+                padding: 10px;
+                margin: 5px 0;
+                border: none;
+                border-radius: 5px;
+                width: calc(100% - 20px);
+                max-width: 600px;
+                color: #ffffff;
+                background-color: #333;
+            }
+            input::placeholder {
+                color: #777;
+            }
+            button {
+                padding: 10px 20px;
+                margin: 10px 0;
+                border: none;
+                border-radius: 5px;
+                color: #ffffff;
+                background-color: #6200ee;
+                cursor: pointer;
+                width: calc(100% - 20px);
+                max-width: 600px;
+            }
+            button:hover {
+                background-color: #3700b3;
+            }
+        </style>
+  </head>
+  <body>
+    <h1>Chat Application</h1>
+    <div id="chat">
+      <ul id="messages"></ul>
+    </div>
+    <input id="username" type="text" placeholder="Enter your username" />
+    <input id="message" type="text" placeholder="Enter your message" />
+    <button id="send">Send</button>
+
+    <script>
+      const ws = new WebSocket("ws://localhost:8080/ws");
+    
+      // Display incoming messages
+      ws.onmessage = (event) => {
+    console.log("Raw message received:", event.data); // Log raw data
+    const message = JSON.parse(event.data);
+    console.log("Parsed message:", message); // Log parsed object
+    const messageItem = document.createElement("li");
+    messageItem.textContent = `${message.username || "Unknown"}: ${message.content || "No content"}`;
+    document.getElementById("messages").appendChild(messageItem);
+};
+
+    
+document.getElementById("send").addEventListener("click", () => {
+    const username = document.getElementById("username").value.trim();
+    const content = document.getElementById("message").value.trim();
+
+    // Validate both fields
+    if (!username || !content) {
+        alert("Both username and message are required!");
+        return;
+    }
+
+    // Send the message to the WebSocket server
+    const message = { username, content };
+    console.log("Sending message:", message); // Debugging log
+    ws.send(JSON.stringify(message));
+
+    // Clear the message input field after sending
+    document.getElementById("message").value = "";
+});
+
+    </script>
+
+  </body>
+</html>

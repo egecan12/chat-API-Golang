@@ -8,6 +8,10 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine) {
+	router.GET("/", func(c *gin.Context) {
+		c.File("index.html") // Ensure the path is correct
+	})
+
 	router.POST("/register", handlers.RegisterUser)
 	router.GET("/ws", func(c *gin.Context) {
 		go handlers.HandleMessages()
