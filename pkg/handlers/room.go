@@ -39,7 +39,7 @@ func CreateRoom(c *gin.Context) {
 
 // GetRooms API
 func GetRooms(c *gin.Context) {
-	rows, err := db.DB.Query(context.Background(), "SELECT id, name, created_at FROM rooms")
+	rows, err := db.DB.Query(context.Background(), "SELECT id, name FROM rooms")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch rooms"})
 		return
@@ -49,15 +49,14 @@ func GetRooms(c *gin.Context) {
 	var rooms []map[string]interface{}
 	for rows.Next() {
 		var room struct {
-			ID        int    `json:"id"`
-			Name      string `json:"name"`
-			CreatedAt string `json:"created_at"`
+			ID   int    `json:"id"`
+			Name string `json:"name"`
 		}
-		if err := rows.Scan(&room.ID, &room.Name, &room.CreatedAt); err != nil {
+		if err := rows.Scan(&room.ID, &room.Name); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error scanning room data"})
 			return
 		}
-		rooms = append(rooms, gin.H{"id": room.ID, "name": room.Name, "created_at": room.CreatedAt})
+		rooms = append(rooms, gin.H{"id": room.ID, "name": room.Name})
 	}
 
 	c.JSON(http.StatusOK, gin.H{"rooms": rooms})
