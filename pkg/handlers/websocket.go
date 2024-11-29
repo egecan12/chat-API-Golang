@@ -15,8 +15,8 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-var clients = make(map[*websocket.Conn]bool) // Connected clients
-var broadcast = make(chan Message)           // Broadcast channel
+var clients = make(map[*websocket.Conn]int) // Connected clients with room IDs
+var broadcast = make(chan Message)          // Broadcast channel
 
 type Message struct {
 	Username string `json:"username"`
@@ -44,7 +44,7 @@ func HandleConnections(c *gin.Context) {
 	}
 	defer ws.Close()
 
-	clients[ws] = true
+	clients[ws] = roomId
 
 	for {
 		var msg Message
@@ -55,9 +55,6 @@ func HandleConnections(c *gin.Context) {
 			break
 		}
 
-		// msg.Username = username
-		// msg.UserID = userId
-		// Mesaja oda ID'sini ekleyin
 		msg.RoomID = roomId
 		broadcast <- msg
 	}
@@ -66,17 +63,18 @@ func HandleConnections(c *gin.Context) {
 func HandleMessages() {
 	for {
 		msg := <-broadcast
-		for client := range clients {
-			err := client.WriteJSON(msg)
-			if err != nil {
-				log.Printf("Error broadcasting message: %v\n", err)
-				client.Close()
-				delete(clients, client)
+		for client, roomId := range clients {
+			if roomId == msg.RoomID {
+				err := client.WriteJSON(msg)
+				if err != nil {
+					log.Printf("Error broadcasting message: %v\n", err)
+					client.Close()
+					delete(clients, client)
+				}
 			}
 		}
 		log.Printf("Message received: %+v\n", msg)
 
-		// Check if user ID exists
 		var userExists bool
 		err := db.DB.QueryRow(context.Background(),
 			"SELECT EXISTS(SELECT 1 FROM users WHERE id=$1)",
@@ -92,7 +90,6 @@ func HandleMessages() {
 			continue
 		}
 
-		// Save message to the database
 		_, err = db.DB.Exec(context.Background(),
 			"INSERT INTO messages (user_id, room_id, content, created_at) VALUES ($1, $2, $3, now())",
 			msg.UserID, msg.RoomID, msg.Content,
