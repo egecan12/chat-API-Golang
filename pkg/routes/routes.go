@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +16,14 @@ func SetupRoutes(router *gin.Engine) {
 	if htmlBasePath == "" {
 		htmlBasePath = "." // Default to current directory if not set
 	}
-
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"}, // Replace with your client's URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 	// Serve the main chat page
 	router.GET("/", handlers.AuthMiddleware(), func(c *gin.Context) {
 		c.File(filepath.Join(htmlBasePath, "index.html"))
