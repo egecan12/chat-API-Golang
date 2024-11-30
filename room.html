@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Room</title>
-    <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Room</title>
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -102,92 +102,105 @@
             background-color: #333;
         }
     </style>
-  </head>
-  <body>
-    <div id="mainContent">
-      <h1 id="roomTitle">Room</h1>
-      <div id="messages"></div>
-      <div id="messageInputContainer">
-        <input id="messageInput" type="text" placeholder="Type a message" />
-        <button id="sendMessageButton">
-          Send <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
-    </div>
-    <div id="sidebar">
-      <h2>Rooms</h2>
-      <ul id="roomList"></ul>
-    </div>
+    </head>
+    <body>
+        <div id="mainContent">
+            <h1 id="roomTitle">Room</h1>
+            <div id="messages"></div>
+            <div id="messageInputContainer">
+                <input id="messageInput" type="text"
+                    placeholder="Type a message" />
+                <button id="sendMessageButton">
+                    Send <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        <div id="sidebar">
+            <h2>Rooms</h2>
+            <ul id="roomList"></ul>
+        </div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('roomId');
-        document.getElementById('roomTitle').innerText = `Room: ${roomId}`;
-
-        async function loadMessages(roomId) {
-            const response = await fetch(`/messages?roomId=${roomId}`);
-            const messages = await response.json();
-            const chatBox = document.getElementById('messages');
-            chatBox.innerHTML = '';
-            messages.forEach(msg => {
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('message');
-                messageElement.innerHTML = `<div class="username">${msg.username}</div><div class="content">${msg.content}</div>`;
-                chatBox.appendChild(messageElement);
-            });
-        }
-
-        async function loadRooms() {
-            const token = localStorage.getItem('token');
-            const response = await fetch('/rooms', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const roomId = urlParams.get('roomId');
+                document.getElementById('roomTitle').innerText = `Room: ${roomId}`;
+        
+                async function loadMessages(roomId) {
+                    const response = await fetch(`/messages?roomId=${roomId}`);
+                    const messages = await response.json();
+                    const chatBox = document.getElementById('messages');
+                    chatBox.innerHTML = '';
+                    messages.forEach(msg => {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('message');
+                        messageElement.innerHTML = `<div class="username">${msg.username}</div><div class="content">${msg.content}</div>`;
+                        chatBox.appendChild(messageElement);
+                    });
                 }
-            });
-            const rooms = await response.json();
-            const roomList = document.getElementById('roomList');
-            roomList.innerHTML = '';
-            rooms.forEach(room => {
-                const roomElement = document.createElement('li');
-                roomElement.innerHTML = `<a href="?roomId=${room.id}">${room.name}</a>`;
-                roomList.appendChild(roomElement);
-            });
+        
+                async function loadRooms() {
+    console.log("loadRooms function called");
+    const token = localStorage.getItem('token');
+    const response = await fetch('/rooms', {
+        headers: {
+            'Authorization': `Bearer ${token}`
         }
+    });
+    const data = await response.json(); // Parse the JSON response
+    console.log("rooms:", data); // Log the full response object
 
-        const socket = new WebSocket(`ws://localhost:8080/ws?roomId=${roomId}`);
+    const roomList = document.getElementById('roomList');
+    roomList.innerHTML = '';
 
-        socket.onopen = () => {
-            console.log("WebSocket connection established");
-            loadMessages(roomId);
-            loadRooms();
-        };
-
-        socket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message');
-            messageDiv.innerHTML = `<div class="username">${message.username}</div><div class="content">${message.content}</div>`;
-            document.getElementById('messages').appendChild(messageDiv);
-        };
-
-        socket.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
-
-        socket.onclose = (event) => {
-            console.log("WebSocket connection closed:", event);
-        };
-
-        document.getElementById('sendMessageButton').addEventListener('click', () => {
-            const token = localStorage.getItem('token');
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const userId = payload.user_id;
-            const username = payload.username;
-            const messageInput = document.getElementById('messageInput');
-            const message = messageInput.value;
-            socket.send(JSON.stringify({ content: message, username: username, userId: userId }));
-            messageInput.value = '';
+    // Ensure 'data.rooms' exists and is an array
+    if (data.rooms && Array.isArray(data.rooms)) {
+        data.rooms.forEach(room => {
+            const roomElement = document.createElement('li');
+            roomElement.innerHTML = `<a href="?roomId=${room.id}">${room.name}</a>`;
+            roomList.appendChild(roomElement);
         });
-    </script>
-  </body>
+    } else {
+        console.error("rooms is not an array:", data);
+    }
+}
+
+        
+                const socket = new WebSocket(`ws://localhost:8080/ws?roomId=${roomId}`);
+        
+                socket.onopen = () => {
+                    console.log("WebSocket connection established");
+                    loadMessages(roomId);
+                    loadRooms();
+                };
+        
+                socket.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    const messageDiv = document.createElement('div');
+                    messageDiv.classList.add('message');
+                    messageDiv.innerHTML = `<div class="username">${message.username}</div><div class="content">${message.content}</div>`;
+                    document.getElementById('messages').appendChild(messageDiv);
+                };
+        
+                socket.onerror = (error) => {
+                    console.error("WebSocket error:", error);
+                };
+        
+                socket.onclose = (event) => {
+                    console.log("WebSocket connection closed:", event);
+                };
+        
+                document.getElementById('sendMessageButton').addEventListener('click', () => {
+                    const token = localStorage.getItem('token');
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const userId = payload.user_id;
+                    const username = payload.username;
+                    const messageInput = document.getElementById('messageInput');
+                    const message = messageInput.value;
+                    socket.send(JSON.stringify({ content: message, username: username, userId: userId }));
+                    messageInput.value = '';
+                });
+            });
+        </script>
+    </body>
 </html>
