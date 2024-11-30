@@ -4,16 +4,27 @@ import axios from "axios";
 
 const Lobby = ({ token }) => {
   const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRooms = async () => {
-      const response = await axios.get("http://localhost:8080/rooms", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setRooms(response.data.rooms);
+      try {
+        const response = await axios.get("http://localhost:8080/rooms", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setRooms(response.data.rooms);
+      } catch (error) {
+        console.error("Error fetching rooms:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchRooms();
   }, [token]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
