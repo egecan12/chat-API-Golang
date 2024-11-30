@@ -1,6 +1,6 @@
 // src/components/Room.js
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import "./Room.css"; // Import the CSS file
 
@@ -21,7 +21,7 @@ const Room = ({ token }) => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        setMessages(response.data);
+        setMessages(response.data || []);
       } catch (error) {
         console.error("Error fetching messages:", error);
       } finally {
@@ -34,7 +34,7 @@ const Room = ({ token }) => {
         const response = await axios.get(`http://localhost:8080/rooms`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setRooms(response.data.rooms);
+        setRooms(response.data.rooms || []);
       } catch (error) {
         console.error("Error fetching rooms:", error);
       } finally {
@@ -95,7 +95,7 @@ const Room = ({ token }) => {
           <ul id="roomList">
             {rooms.map((room) => (
               <li key={room.id}>
-                <a href={`?roomId=${room.id}`}>{room.name}</a>
+                <Link to={`/room/${room.id}`}>{room.name}</Link>
               </li>
             ))}
           </ul>
