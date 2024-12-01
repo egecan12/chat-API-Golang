@@ -1,5 +1,4 @@
-// src/components/Room.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import "./Room.css"; // Import the CSS file
@@ -29,22 +28,25 @@ const Room = ({ token }) => {
       }
     };
 
-    const fetchRooms = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/rooms`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setRooms(response.data.rooms || []);
-      } catch (error) {
-        console.error("Error fetching rooms:", error);
-      } finally {
-        setLoadingRooms(false);
-      }
-    };
-
     fetchMessages();
+  }, [roomId, token]); // This useEffect triggers when roomId or token changes
+
+  const fetchRooms = useCallback(async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/rooms`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRooms(response.data.rooms || []);
+    } catch (error) {
+      console.error("Error fetching rooms:", error);
+    } finally {
+      setLoadingRooms(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
     fetchRooms();
-  }, [roomId, token]);
+  }, [fetchRooms]); // This useEffect triggers only once when the component mounts
 
   const handleSendMessage = async () => {
     const payload = JSON.parse(atob(token.split(".")[1]));
@@ -58,6 +60,13 @@ const Room = ({ token }) => {
     });
     setMessages([...messages, newMessage]);
     setMessage("");
+  };
+
+  const handleAddRoom = async (newRoom) => {
+    await axios.post(`http://localhost:8080/rooms`, newRoom, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    fetchRooms(); // Fetch rooms again when a new room is added
   };
 
   if (loadingMessages || loadingRooms) {

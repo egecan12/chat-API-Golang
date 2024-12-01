@@ -54,7 +54,7 @@ func SetupRoutes(router *gin.Engine) {
 			c.String(http.StatusBadRequest, "Room ID is required")
 			return
 		}
-		c.File(filepath.Join(htmlBasePath, "room.html"))
+		// c.File(filepath.Join(htmlBasePath, "room.html"))
 	}, handlers.GetMessages)
 
 	// Register route
