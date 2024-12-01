@@ -1,141 +1,216 @@
-/* src/components/Room.css */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* General Reset */
+* {
     margin: 0;
     padding: 0;
-    display: flex;
-    height: 100vh;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Roboto', sans-serif;
     background-color: #121212;
     color: #e0e0e0;
-}
-
-#mainContent {
+    overflow-x: hidden;
+  }
+  
+  #mainContent {
     display: flex;
     flex-direction: column;
+    height: 100vh;
+    background-color: #1a1a1a;
+  }
+  
+  #roomTitle {
+    padding: 1rem;
+    background-color: #2a2a2a;
+    color: #ffffff;
+    font-size: 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid #333;
+  }
+  
+  #contentContainer {
+    display: flex;
+    flex: 1;
     height: 100%;
-}
-
-#roomTitle {
-    text-align: center;
-    padding: 20px;
-    background-color: #1f1f1f;
-    border-bottom: 1px solid #333;
-    font-size: 24px;
-}
-
-#contentContainer {
+    overflow: hidden;
+  }
+  
+  #sidebar {
+    width: 20%;
+    background-color: #202020;
+    border-right: 1px solid #333;
     display: flex;
+    flex-direction: column;
+    transition: all 0.3s;
+  }
+  
+  #sidebar h2 {
+    padding: 1rem;
+    color: #bdbdbd;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #333;
+  }
+  
+  #roomList {
     flex: 1;
-    width: 100%;
-}
-
-#chatContainer {
+    overflow-y: auto;
+    padding: 1rem;
+  }
+  
+  #roomList li {
+    margin-bottom: 1rem;
+    list-style: none;
+  }
+  
+  #roomList li a {
+    text-decoration: none;
+    color: #8e8e8e;
+    padding: 0.5rem;
+    display: block;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  #roomList li a:hover {
+    background-color: #333;
+    color: #ffffff;
+  }
+  
+  #chatContainer {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    background-color: #1f1f1f;
-}
-
-#messages {
+    background-color: #1a1a1a;
+    order: 1; /* Default chat order */
+  }
+  
+  #messages {
     flex: 1;
-    padding: 20px;
     overflow-y: auto;
-    background-color: #1f1f1f;
-    border-radius: 5px;
-}
-
-.message {
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #333;
-}
-
-.message .username {
+    padding: 1rem;
+    background-color: #1e1e1e;
+    border-bottom: 1px solid #333;
+  }
+  
+  .message {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .username {
     font-weight: bold;
-    margin-bottom: 5px;
-}
-
-#messageInputContainer {
+    color: #90caf9;
+    margin-bottom: 0.2rem;
+  }
+  
+  .content {
+    color: #e0e0e0;
+  }
+  
+  #messageInputContainer {
+    padding: 1rem;
+    background-color: #252525;
     display: flex;
-    padding: 10px;
-    background-color: #1f1f1f;
-    border-top: 1px solid #333;
-    border-radius: 5px;
-}
-
-#messageInput {
-    width: 200px;
-
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  #messageInput {
     flex: 1;
-    padding: 10px;
-    border: 1px solid #333;
-    border-radius: 5px;
+    min-width: 80%;
     background-color: #333;
-    color: #e0e0e0;
-}
-
-#sendMessageButton {
-    padding: 10px 20px;
-    margin-left: 10px;
     border: none;
-    background-color: #007bff;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#sendMessageButton i {
-    margin-left: 5px;
-}
-
-#sidebar {
-    width: 300px;
-    background-color: #1f1f1f;
-    border-left: 1px solid #333;
-    overflow-y: auto;
-    padding: 20px;
-}
-
-#sidebar h2 {
-    text-align: center;
-    padding: 20px;
-    border-bottom: 1px solid #333;
-}
-
-#roomList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-#roomList li {
-    padding: 10px;
-    border-bottom: 1px solid #333;
-}
-
-#roomList li a {
     color: #e0e0e0;
-    text-decoration: none;
-    display: block;
-}
-
-#roomList li:hover {
-    background-color: #333;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
+    padding: 0.8rem;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
+  #messageInput::placeholder {
+    color: #8e8e8e;
+  }
+  
+  #sendMessageButton {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 0.8rem 1rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  #sendMessageButton:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Responsiveness */
+  @media (max-width: 768px) {
     #contentContainer {
-        flex-direction: column;
+      flex-direction: column;
     }
+  
     #sidebar {
-        width: 100%;
-        border-left: none;
-        border-top: 1px solid #333;
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid #333;
+      order: 2; /* Move sidebar below chat by default */
     }
-}
+  
+    #chatContainer {
+      flex: 1;
+      order: 1; /* Chat appears first */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    #contentContainer {
+      flex-direction: column-reverse;
+    }
+  
+    #chatContainer {
+      order: 1; /* Chat remains first */
+    }
+  
+    #sidebar {
+      order: 3; /* Sidebar moved to the bottom */
+      width: 100%;
+    }
+  
+    /* Position sidebar (Rooms) on the right side of the Chat div */
+    #contentContainer {
+      display: grid;
+      grid-template-areas:
+        "chat sidebar";
+      grid-template-columns: 1fr 1fr; /* Split into two equal columns */
+      gap: 0.5rem;
+    }
+  
+    #chatContainer {
+      grid-area: chat;
+    }
+  
+    #sidebar {
+      grid-area: sidebar;
+      width: 100%;
+    }
+  
+    #messageInputContainer {
+      flex-direction: column;
+      gap: 0.8rem;
+      align-items: stretch;
+    }
+  
+    #messageInput {
+      width: 100%;
+    }
+  
+    #sendMessageButton {
+      width: 100%;
+      font-size: 0.9rem;
+      padding: 0.8rem;
+    }
+  }
+  
