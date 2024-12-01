@@ -1,6 +1,6 @@
-// src/components/Lobby.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "./Lobby.css";
 
 const Lobby = ({ token }) => {
   const [rooms, setRooms] = useState([]);
@@ -23,19 +23,25 @@ const Lobby = ({ token }) => {
   }, [token]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="lobby-loading">Loading...</div>;
   }
 
   return (
-    <div>
-      <h1>Lobby</h1>
-      <ul>
+    <div className="lobby-container">
+      <header className="lobby-header">
+        <h1>Lobby</h1>
+      </header>
+      <div className="lobby-grid">
         {rooms.map((room) => (
-          <li key={room.id}>
-            <a href={`/room/${room.id}`}>{room.name}</a>
-          </li>
+          <a
+            href={`/room/${room.id}`}
+            key={room.id}
+            className="lobby-room-button"
+          >
+            {room.name}
+          </a>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

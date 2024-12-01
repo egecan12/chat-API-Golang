@@ -76,6 +76,9 @@ const Room = ({ token }) => {
   return (
     <div id="mainContent">
       <h1 id="roomTitle">Room: {roomId}</h1>
+      <Link to="/lobby" id="goToLobbyButton">
+        <i className="fas fa-arrow-left"></i> Go to Lobby
+      </Link>
       <div id="contentContainer">
         <div id="chatContainer">
           <div id="messages">
